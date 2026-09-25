@@ -18,7 +18,3 @@ test.php
 .DS_Store
 Thumbs.db
 *.php~
-
-# Notes de travail locales, jamais publiées
-CLAUDE.md
-.claude/
