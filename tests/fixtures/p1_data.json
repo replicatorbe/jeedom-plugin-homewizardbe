@@ -1,0 +1,23 @@
+{
+    "wifi_ssid": "MonWifi",
+    "wifi_strength": 58,
+    "smr_version": 50,
+    "meter_model": "Fluvius 253972606_G",
+    "unique_id": "3153414731313030303030303031",
+    "active_tariff": 2,
+    "total_power_import_kwh": 5764.273,
+    "total_power_import_t1_kwh": 2761.107,
+    "total_power_import_t2_kwh": 3003.166,
+    "total_power_export_kwh": 5049.628,
+    "total_power_export_t1_kwh": 2672.956,
+    "total_power_export_t2_kwh": 2376.672,
+    "active_power_w": -2157,
+    "active_power_l1_w": -2157,
+    "active_voltage_l1_v": 245.1,
+    "active_current_a": 10.65,
+    "active_current_l1_a": 10.65,
+    "active_power_average_w": 0,
+    "montly_power_peak_w": 420,
+    "montly_power_peak_timestamp": 260925061500,
+    "external": []
+}

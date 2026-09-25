@@ -1,0 +1,28 @@
+{
+    "protocol_version": 50,
+    "meter_model": "Fluvius 253972606_G",
+    "unique_id": "3153414731313030303030303031",
+    "timestamp": "2026-09-25T11:19:46",
+    "tariff": 2,
+    "energy_import_kwh": 5764.273,
+    "energy_import_t1_kwh": 2761.107,
+    "energy_import_t2_kwh": 3003.166,
+    "energy_export_kwh": 5049.628,
+    "energy_export_t1_kwh": 2672.956,
+    "energy_export_t2_kwh": 2376.672,
+    "power_w": -2157,
+    "power_l1_w": -2157,
+    "voltage_l1_v": 245.1,
+    "current_a": 10.65,
+    "current_l1_a": 10.65,
+    "voltage_sag_l1_count": 1,
+    "voltage_swell_l1_count": 0,
+    "any_power_fail_count": 4,
+    "long_power_fail_count": 2,
+    "average_power_15m_w": 0,
+    "monthly_power_peak_w": 420,
+    "monthly_power_peak_timestamp": "2026-09-25T06:15:00",
+    "external": [
+        {"unique_id": "37464C4F32313139303333373333", "type": "gas_meter", "timestamp": "2026-09-25T11:15:00", "value": 2569.646, "unit": "m3"}
+    ]
+}

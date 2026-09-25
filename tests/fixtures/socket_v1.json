@@ -1,0 +1,16 @@
+{
+    "wifi_ssid": "MonWifi",
+    "wifi_strength": 92,
+    "total_power_import_kwh": 63.651,
+    "total_power_import_t1_kwh": 63.651,
+    "total_power_export_kwh": 0,
+    "total_power_export_t1_kwh": 0,
+    "active_power_w": 98.3,
+    "active_power_l1_w": 98.3,
+    "active_voltage_v": 230.4,
+    "active_current_a": 0.482,
+    "active_reactive_power_var": -12.4,
+    "active_apparent_power_va": 111.1,
+    "active_power_factor": 0.884,
+    "active_frequency_hz": 50.02
+}

@@ -1,0 +1,16 @@
+{
+    "energy_import_kwh": 812.034,
+    "energy_import_t1_kwh": 812.034,
+    "energy_export_kwh": 0.012,
+    "energy_export_t1_kwh": 0.012,
+    "power_w": 1520.3,
+    "voltage_v": 231.0,
+    "current_a": 6.7,
+    "frequency_hz": 50.01,
+    "apparent_power_va": 1560.1,
+    "reactive_power_var": 350.2,
+    "apparent_current_a": 6.9,
+    "reactive_current_a": 1.5,
+    "power_factor": 0.974,
+    "timestamp": "2026-09-25T11:19:46"
+}
