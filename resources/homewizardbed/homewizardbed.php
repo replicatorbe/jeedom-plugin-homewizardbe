@@ -164,6 +164,7 @@ function hwFetch($_request, $_timeout) {
 /* ----------------------------------------------------------------- BOUCLE */
 
 $config = null;
+$configHash = '';
 $stampSeen = -1;
 $configAt = 0;
 $due = array();       /* [eq][clé] => instant du prochain relevé */
@@ -176,17 +177,23 @@ while ($running) {
 
     /* La configuration est relue quand le plugin le signale — il touche un
      * fichier témoin à chaque enregistrement d'équipement — et de toute façon
-     * toutes les cinq minutes, pour ne jamais rester désynchronisé. */
+     * toutes les cinq minutes, pour ne jamais rester désynchronisé. Un relevé
+     * n'est relancé en rafale que si la config a vraiment changé : la relecture
+     * périodique seule ne doit pas réinitialiser les échéances. */
     clearstatcache();
     $mtime = ($stamp !== '' && file_exists($stamp)) ? filemtime($stamp) : 0;
     if ($config === null || $mtime !== $stampSeen || $now - $configAt > 300) {
         $fresh = hwLoadConfig();
         if ($fresh !== null) {
-            $config = $fresh;
+            $freshHash = md5(json_encode($fresh));
+            if ($freshHash !== $configHash) {
+                $config = $fresh;
+                $configHash = $freshHash;
+                $due = array();
+                hwLog('info', count($config['devices']) . ' appareil(s) à relever');
+            }
             $stampSeen = $mtime;
             $configAt = $now;
-            $due = array();
-            hwLog('info', count($config['devices']) . ' appareil(s) à relever');
         } elseif ($config === null) {
             sleep(10);
             continue;

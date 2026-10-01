@@ -187,6 +187,8 @@
         "Éteindre": "Turn off",
         "Cet appareil ne propose que l'API v1 : l'association v2 n'est pas possible.": "This device only offers API v1: v2 pairing is not possible.",
         "Cet appareil ne propose que l\\'API v1 : l\\'association v2 n\\'est pas possible.": "This device only offers API v1: v2 pairing is not possible.",
+        "(relevé)": "(timestamp)",
+        "Dépairage avant suppression :": "Unpairing before removal:",
         "Zéro net": "Net zero",
         "Zéro net (charge uniquement)": "Net zero (charge only)",
         "Zéro net (décharge uniquement)": "Net zero (discharge only)",

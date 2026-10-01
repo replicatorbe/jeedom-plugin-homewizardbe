@@ -281,6 +281,21 @@ class homewizardbe extends eqLogic {
         }
     }
 
+    /* Supprimer l'équipement laisserait sinon le jeton gravé dans l'appareil,
+     * qui accumule les utilisateurs orphelins au fil des recréations. On tente
+     * le DELETE côté appareil sans sauvegarder : la suppression suit juste
+     * après, inutile de récrire le token. */
+    public function preRemove() {
+        if (!$this->usesV2()) {
+            return;
+        }
+        try {
+            $this->call('DELETE', '/api/user', array('name' => self::USER_NAME . '#' . $this->getId()));
+        } catch (Throwable $e) {
+            log::add(__CLASS__, 'debug', __('Dépairage avant suppression :', __FILE__) . ' ' . $e->getMessage());
+        }
+    }
+
     public function postRemove() {
         self::reloadDaemonConfig();
     }
@@ -568,7 +583,8 @@ class homewizardbe extends eqLogic {
         $base = isset(self::MODELS[$type]) ? 'HomeWizard ' . self::MODELS[$type][0]
             : (isset($_info['product_name']) && $_info['product_name'] !== '' ? (string) $_info['product_name'] : 'HomeWizard');
         /* Unicité (name, object_id) sur toute la table eqLogic : on numérote
-         * plutôt que d'échouer. */
+         * plutôt que d'échouer. Toute autre erreur (base, contrainte étrangère)
+         * ne se résoudra pas en changeant le numéro : on la laisse remonter. */
         for ($try = 1; $try <= 10; $try++) {
             $eqLogic->setName($try === 1 ? $base : $base . ' ' . $try);
             try {
@@ -584,7 +600,11 @@ class homewizardbe extends eqLogic {
                 }
                 return $eqLogic;
             } catch (Throwable $e) {
-                if ($try === 10) {
+                $msg = $e->getMessage();
+                $nameClash = stripos($msg, 'duplicate') !== false
+                          || stripos($msg, 'déjà') !== false
+                          || stripos($msg, 'existe') !== false;
+                if (!$nameClash || $try === 10) {
                     throw $e;
                 }
             }
@@ -1277,9 +1297,9 @@ class homewizardbe extends eqLogic {
                 'numeric', '', '', 0, 0);
         }
         if (preg_match('/^ext_([a-z_]+?)(?:_(\d+))?(_timestamp)?$/', $_key, $m) && isset(self::EXTERNAL_TYPES[$m[1]])) {
-            $name = self::EXTERNAL_TYPES[$m[1]] . (!empty($m[2]) ? ' ' . $m[2] : '');
+            $name = __(self::EXTERNAL_TYPES[$m[1]], __FILE__) . (!empty($m[2]) ? ' ' . $m[2] : '');
             if (!empty($m[3])) {
-                return array($name . ' (relevé)', 'string', '', '', 0, 0);
+                return array($name . ' ' . __('(relevé)', __FILE__), 'string', '', '', 0, 0);
             }
             return array($name, 'numeric', '', '', 1, 1);
         }
