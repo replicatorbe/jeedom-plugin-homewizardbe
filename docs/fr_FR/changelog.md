@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2
+
+- Les grandeurs par phase (puissance, tension, courant…) et la puissance du
+  Wi-Fi ne sont plus historisées à leur création : sur un monophasé, les
+  premières doublaient l'historique de la grandeur totale. Les commandes déjà
+  créées gardent le réglage choisi.
+
 ## 0.1
 
 Première version.

@@ -1262,7 +1262,9 @@ class homewizardbe extends eqLogic {
                 'gas_timestamp'            => array('Horodatage du gaz (ancien champ)', 'string', '', '', 0, 0),
                 'unique_gas_id'            => array('Identifiant du compteur de gaz', 'string', '', '', 0, 0),
                 'wifi_ssid'                => array('Réseau Wi-Fi', 'string', '', '', 0, 0),
-                'wifi_strength'            => array('Puissance du Wi-Fi', 'numeric', '%', '', 0, 1),
+                /* Non historisée : elle varie sans cesse et n'intéresse qu'en
+                 * diagnostic, sa valeur courante suffit. */
+                'wifi_strength'            => array('Puissance du Wi-Fi', 'numeric', '%', '', 0, 0),
                 'wifi_rssi_db'             => array('RSSI Wi-Fi', 'numeric', 'dBm', '', 0, 0),
                 'uptime_h'                 => array('Temps de fonctionnement', 'numeric', 'h', '', 0, 0),
                 'online'                   => array('En ligne', 'binary', '', '', 0, 0),
@@ -1280,9 +1282,11 @@ class homewizardbe extends eqLogic {
             $base = $fixed[$m[1] . '_' . $m[3]];
             $base[0] .= ' phase ' . $m[2];
             $base[3] = $m[1] === 'power' ? 'POWER' : ($m[1] === 'voltage' ? 'VOLTAGE' : '');
-            /* Masquée par défaut : sur un monophasé, elle répète la puissance
-             * totale. Un triphasé la réaffiche d'un clic. */
+            /* Masquée et non historisée par défaut : sur un monophasé, elle
+             * répète la grandeur totale et doublerait son historique. Un
+             * triphasé la réaffiche et la réhistorise d'un clic. */
             $base[4] = 0;
+            $base[5] = 0;
             return $base;
         }
         if (preg_match('/^power_factor_l([1-3])$/', $_key, $m)) {

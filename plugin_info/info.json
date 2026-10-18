@@ -1,7 +1,7 @@
 {
     "id": "homewizardbe",
     "name": "HomeWizard",
-    "pluginVersion": "0.1",
+    "pluginVersion": "0.2",
     "description": {
         "fr_FR": "Relève en réseau local les appareils HomeWizard Energy, sans passer par le cloud ni par l'application : compteur P1 (HWE-P1), prise connectée, compteurs kWh monophasés et triphasés, compteur d'eau et batterie. Le plugin interroge l'API locale v1, ou la v2 après association par appui sur le bouton de l'appareil, et crée les commandes que l'appareil publie réellement : puissance totale et par phase, tensions, courants, index d'import et d'export par tarif, tarif actif, pointe mensuelle, historique et moyenne des pointes sur douze mois pour le tarif capacitaire, gaz et eau des compteurs raccordés, coupures et creux de tension. Il pilote aussi ce qui se pilote : prise, verrou, LED d'état, connexion au cloud, identification. Aucune dépendance à installer.",
         "en_US": "Reads HomeWizard Energy devices over the local network, without the cloud or the app: P1 meter (HWE-P1), energy socket, single and three phase kWh meters, water meter and battery. The plugin polls the local v1 API, or the v2 API after pairing with the device button, and creates the commands the device actually reports: total and per phase power, voltages, currents, import and export counters per tariff, active tariff, monthly peak, twelve-month peak history and average for the Belgian capacity tariff, gas and water from connected meters, power failures, voltage sags and swells. It also drives what can be driven: socket, lock, status LED, cloud connection, identify. Nothing to install."
