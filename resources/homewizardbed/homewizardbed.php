@@ -167,8 +167,15 @@ $config = null;
 $configHash = '';
 $stampSeen = -1;
 $configAt = 0;
+$configRetryAt = 0;   /* pas de nouvelle lecture de config avant cet instant */
+$configFailures = 0;  /* lectures de config ratées d'affilée */
+$pushFailures = 0;    /* envois de relevés ratés d'affilée */
 $due = array();       /* [eq][clé] => instant du prochain relevé */
 $failures = array();  /* [eq] => échecs consécutifs */
+
+/* Seuil à partir duquel un callback en échec est signalé en erreur : le démon
+ * tourne d'ordinaire en --loglevel error, qui masque les avertissements. */
+define('HW_FAILURE_ALERT', 3);
 
 hwLog('info', 'Démarrage du démon HomeWizard (PID ' . getmypid() . ')');
 
@@ -182,9 +189,16 @@ while ($running) {
      * périodique seule ne doit pas réinitialiser les échéances. */
     clearstatcache();
     $mtime = ($stamp !== '' && file_exists($stamp)) ? filemtime($stamp) : 0;
-    if ($config === null || $mtime !== $stampSeen || $now - $configAt > 300) {
+    /* Si Jeedom ne répond pas, on espace les relectures (5, 10, 20, 40 puis
+     * 60 s) au lieu de le réinterroger à chaque tour de boucle. */
+    if (($config === null || $mtime !== $stampSeen || $now - $configAt > 300) && $now >= $configRetryAt) {
         $fresh = hwLoadConfig();
         if ($fresh !== null) {
+            if ($configFailures >= HW_FAILURE_ALERT) {
+                hwLog('error', 'Configuration de nouveau lue après ' . $configFailures . ' échec(s)');
+            }
+            $configFailures = 0;
+            $configRetryAt = 0;
             $freshHash = md5(json_encode($fresh));
             if ($freshHash !== $configHash) {
                 $config = $fresh;
@@ -194,10 +208,18 @@ while ($running) {
             }
             $stampSeen = $mtime;
             $configAt = $now;
-        } elseif ($config === null) {
-            sleep(10);
-            continue;
+        } else {
+            $configFailures++;
+            $retryIn = min(60, 5 * (1 << min(4, $configFailures - 1)));
+            $configRetryAt = $now + $retryIn;
+            if ($configFailures === HW_FAILURE_ALERT) {
+                hwLog('error', 'Configuration illisible depuis Jeedom (' . $configFailures . ' échecs) — nouvel essai toutes les ' . $retryIn . ' s au plus');
+            }
         }
+    }
+    if ($config === null) {
+        sleep(1);
+        continue;
     }
 
     $timeout = isset($config['timeout']) ? max(1, (int) $config['timeout']) : 3;
@@ -245,8 +267,19 @@ while ($running) {
 
     if (!empty($batch)) {
         $answer = hwCallback('', json_encode(array('batch' => $batch)));
-        if ($answer !== null && trim($answer) !== 'OK') {
-            hwLog('warning', 'Réponse inattendue de Jeedom : ' . substr($answer, 0, 200));
+        if ($answer === null) {
+            $pushFailures++;
+            if ($pushFailures === HW_FAILURE_ALERT) {
+                hwLog('error', 'Envoi des relevés à Jeedom en échec (' . $pushFailures . ' fois d\'affilée)');
+            }
+        } else {
+            if ($pushFailures >= HW_FAILURE_ALERT) {
+                hwLog('error', 'Envoi des relevés rétabli après ' . $pushFailures . ' échec(s)');
+            }
+            $pushFailures = 0;
+            if (trim($answer) !== 'OK') {
+                hwLog('warning', 'Réponse inattendue de Jeedom : ' . substr($answer, 0, 200));
+            }
         }
     }
 
