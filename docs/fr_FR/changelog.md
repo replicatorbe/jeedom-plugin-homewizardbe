@@ -2,10 +2,12 @@
 
 ## 0.2
 
-- Les grandeurs par phase (puissance, tension, courant…) et la puissance du
-  Wi-Fi ne sont plus historisées à leur création : sur un monophasé, les
-  premières doublaient l'historique de la grandeur totale. Les commandes déjà
-  créées gardent le réglage choisi.
+- Les grandeurs par phase qui doublent un total (puissance, courant,
+  puissances et courants apparents et réactifs) et la puissance du Wi-Fi ne
+  sont plus historisées à leur création : sur un monophasé, les premières
+  doublaient l'historique de la grandeur totale. La tension par phase, seule
+  tension publiée par le P1, reste historisée. Les commandes déjà créées
+  gardent le réglage choisi.
 
 ## 0.1
 

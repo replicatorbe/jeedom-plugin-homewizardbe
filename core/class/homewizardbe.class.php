@@ -1282,11 +1282,14 @@ class homewizardbe extends eqLogic {
             $base = $fixed[$m[1] . '_' . $m[3]];
             $base[0] .= ' phase ' . $m[2];
             $base[3] = $m[1] === 'power' ? 'POWER' : ($m[1] === 'voltage' ? 'VOLTAGE' : '');
-            /* Masquée et non historisée par défaut : sur un monophasé, elle
-             * répète la grandeur totale et doublerait son historique. Un
-             * triphasé la réaffiche et la réhistorise d'un clic. */
+            /* Masquée par défaut : sur un monophasé, elle répète la grandeur
+             * totale. Un triphasé la réaffiche d'un clic. */
             $base[4] = 0;
-            $base[5] = 0;
+            /* Non historisée non plus, sauf la tension : le P1 ne publie pas
+             * de tension totale, la tension de phase est alors la seule. */
+            if ($m[1] !== 'voltage') {
+                $base[5] = 0;
+            }
             return $base;
         }
         if (preg_match('/^power_factor_l([1-3])$/', $_key, $m)) {

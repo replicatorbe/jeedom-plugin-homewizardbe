@@ -407,6 +407,8 @@ check('voltage_l3_v', array($def[0], $def[2], $def[3], $def[4]), array('Tension 
 check('current_l1_a', homewizardbe::definition('current_l1_a')[0], 'Courant phase 1');
 check('power_l1_w : non historisée par défaut', homewizardbe::definition('power_l1_w')[5], 0);
 check('current_l1_a : non historisée par défaut', homewizardbe::definition('current_l1_a')[5], 0);
+check('apparent_power_l2_va : non historisée par défaut', homewizardbe::definition('apparent_power_l2_va')[5], 0);
+check('voltage_l1_v : reste historisée', homewizardbe::definition('voltage_l1_v')[5], 1);
 check('wifi_strength : non historisée', homewizardbe::definition('wifi_strength')[5], 0);
 check('apparent_power_l1_va', array_slice(homewizardbe::definition('apparent_power_l1_va'), 0, 3),
     array('Puissance apparente phase 1', 'numeric', 'VA'));
