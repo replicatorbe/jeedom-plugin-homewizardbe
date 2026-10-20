@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1
+
+- The endpoint called by the daemon now only accepts the plugin's API key:
+  a Jeedom user's personal key used to be accepted as well.
+
 ## 0.1
 
 First release.

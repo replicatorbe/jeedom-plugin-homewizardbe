@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1
+
+- Le point d'entrée appelé par le démon n'accepte plus que la clé API du
+  plugin : la clé personnelle d'un utilisateur Jeedom y donnait aussi accès.
+
 ## 0.2
 
 - Les grandeurs par phase qui doublent un total (puissance, courant,
