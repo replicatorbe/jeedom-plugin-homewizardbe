@@ -168,6 +168,10 @@ class eqLogic {
         $this->store[$_key] = $_value;
     }
 
+    public $timeout = 0;
+    public function getTimeout($_default = null) { return $this->timeout; }
+    public function setTimeout($_v) { $this->timeout = $_v; return $this; }
+
     public function setIsEnable($_v) {}
     public function setIsVisible($_v) {}
     public function setLogicalId($_v) {}

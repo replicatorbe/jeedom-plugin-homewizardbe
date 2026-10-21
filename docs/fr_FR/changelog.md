@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.2
+
+- Page Santé : appareils joignables (avec la cause de la panne) et mode de
+  relevé, démon ou cron de secours.
+- Délai max entre deux communications posé par défaut : trois relevés
+  manqués, trois minutes au moins. Un réglage déjà choisi est gardé.
+- Arrêt du démon : SIGTERM puis jusqu'à dix secondes pour finir son tour de
+  relevé avant un kill -9, au lieu d'un kill -9 immédiat.
+
 ## 0.2.1
 
 - Le point d'entrée appelé par le démon n'accepte plus que la clé API du

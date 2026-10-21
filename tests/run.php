@@ -662,6 +662,21 @@ check('prise : réglage du voyant 0-100', array($actions['led_set']->subType,
 check('prise v1 : ni reboot ni batteries', isset($actions['reboot']) || isset($actions['battery_mode_set']), false);
 check('prise : facteur de puissance publié en %', $eq->published['power_factor'], 88.4);
 
+/* Délai max entre deux communications : trois relevés manqués, jamais
+ * moins de trois minutes (le cron de secours ne passe qu'à la minute). */
+section('Délai max entre deux communications');
+$eq = device('HWE-P1');
+$eq->preSave();
+check('défaut : trois minutes à 10 s', $eq->getTimeout(), 3);
+$eq = device('HWE-P1');
+$eq->setConfiguration('interval', 300);
+$eq->preSave();
+check('intervalle de 5 min : 15 min', $eq->getTimeout(), 15);
+$eq = device('HWE-P1');
+$eq->setTimeout(30);
+$eq->preSave();
+check('réglage de l\'utilisateur gardé', $eq->getTimeout(), 30);
+
 /* ================================================================== BILAN */
 echo "\n" . str_repeat('=', 70) . "\n";
 printf("%d réussite(s), %d échec(s)\n", $passed, $failed);

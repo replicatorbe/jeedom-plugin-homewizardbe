@@ -50,6 +50,10 @@ class homewizardbe extends eqLogic {
     /* Temps que cron() s'autorise quand il relève à la place du démon. */
     const CRON_BUDGET = 40;
 
+    /* Échecs d'affilée au-delà desquels un appareil est dit hors ligne : le
+     * journal le signale, la page Santé aussi. */
+    const OFFLINE_AFTER = 3;
+
     /* Garde-fou du bouton « Relever maintenant ». */
     const FORCE_MIN_INTERVAL = 3;
 
@@ -92,6 +96,40 @@ class homewizardbe extends eqLogic {
         'standby'             => 'En veille',
         'predictive'          => 'Charge intelligente',
     );
+
+    /* ============================================================ SANTÉ */
+
+    /*
+     * Page Santé de Jeedom : l'état du démon y est déjà. On n'y ajoute que ce
+     * qui se lit dans le cache, sans interroger aucun appareil.
+     */
+    public static function health() {
+        $devices = array();
+        foreach (self::byType(__CLASS__, true) as $eqLogic) {
+            if ($eqLogic->isConfigured()) {
+                $devices[] = $eqLogic;
+            }
+        }
+        $offline = array_filter($devices, function ($eq) { return (int) $eq->getCache('failures', 0) >= self::OFFLINE_AFTER; });
+        $problems = array_map(function ($eq) {
+            return $eq->getHumanName() . ' : ' . $eq->getCache('problem', '');
+        }, $offline);
+        $daemon = self::deamon_info()['state'] == 'ok';
+        return array(
+            array(
+                'test'   => __('Appareils joignables', __FILE__),
+                'result' => (count($devices) - count($offline)) . '/' . count($devices),
+                'advice' => htmlspecialchars(implode(' — ', $problems), ENT_QUOTES),
+                'state'  => empty($offline),
+            ),
+            array(
+                'test'   => __('Relevé', __FILE__),
+                'result' => $daemon ? __('par le démon', __FILE__) : __('par le cron de secours', __FILE__),
+                'advice' => $daemon ? '' : __('Démon arrêté : relevé une fois par minute au mieux, quel que soit l\'intervalle choisi.', __FILE__),
+                'state'  => $daemon,
+            ),
+        );
+    }
 
     /* ================================================== DÉMON ET CRON */
 
@@ -155,17 +193,43 @@ class homewizardbe extends eqLogic {
         return false;
     }
 
+    /* Arrêt propre : SIGTERM, puis jusqu'à dix secondes pour que le démon
+     * finisse son tour de relevé (trois secondes au plus par appareil) et
+     * efface son PID. Le kill -9 n'est plus que le dernier recours. */
     public static function deamon_stop() {
         $pid_file = jeedom::getTmpFolder(__CLASS__) . '/deamon.pid';
         if (file_exists($pid_file)) {
-            $pid = trim(file_get_contents($pid_file));
-            if ($pid != '') {
-                system::kill($pid);
+            $pid = (int) trim(file_get_contents($pid_file));
+            if ($pid > 0 && self::isDaemonPid($pid)) {
+                posix_kill($pid, 15);
+                for ($i = 0; $i < 40 && self::isDaemonPid($pid); $i++) {
+                    usleep(250000);
+                }
+                if (self::isDaemonPid($pid)) {
+                    posix_kill($pid, 9);
+                }
             }
             @unlink($pid_file);
         }
-        system::kill('resources/homewizardbed/homewizardbed.php');
+        /* Filet de sécurité : un démon lancé à la main, ou dont le fichier de
+         * PID a été perdu, relèverait en double. */
+        if (count(system::ps('resources/homewizardbed/homewizardbed.php')) > 0) {
+            system::kill('resources/homewizardbed/homewizardbed.php', false);
+            for ($i = 0; $i < 20 && count(system::ps('resources/homewizardbed/homewizardbed.php')) > 0; $i++) {
+                usleep(250000);
+            }
+            if (count(system::ps('resources/homewizardbed/homewizardbed.php')) > 0) {
+                system::kill('resources/homewizardbed/homewizardbed.php');
+            }
+        }
         return true;
+    }
+
+    /* Le PID est-il toujours notre démon ? Après un kill -9, il a pu être
+     * réattribué à un autre processus. */
+    private static function isDaemonPid($_pid) {
+        $cmdline = @file_get_contents('/proc/' . (int) $_pid . '/cmdline');
+        return $cmdline !== false && strpos($cmdline, 'homewizardbed.php') !== false;
     }
 
     public static function getCallbackUrl() {
@@ -254,6 +318,13 @@ class homewizardbe extends eqLogic {
         }
         if ((int) $this->getConfiguration('interval', 0) <= 0) {
             $this->setConfiguration('interval', self::DEFAULT_INTERVAL);
+        }
+        /* Délai max entre deux communications : le coeur marque l'équipement
+         * en défaut au-delà. Trois relevés manqués, au rythme du cron de
+         * secours si l'intervalle est plus court que la minute. Posé une
+         * seule fois : si l'utilisateur l'ajuste ensuite, c'est son choix. */
+        if ((int) $this->getTimeout() === 0) {
+            $this->setTimeout((int) ceil(3 * max(60, $this->interval()) / 60));
         }
         if ($this->getConfiguration('capacity', '') === '') {
             $this->setConfiguration('capacity', 1);
@@ -1567,7 +1638,7 @@ class homewizardbe extends eqLogic {
         $this->publishCmd('online', 0);
         /* Un seul message au niveau « info » par panne : un journal qui répète
          * la même ligne toutes les dix secondes ne se lit plus. */
-        if ($failures === 3) {
+        if ($failures === self::OFFLINE_AFTER) {
             log::add(__CLASS__, 'warning', $this->getHumanName() . ' : ' . $_message);
         } else {
             log::add(__CLASS__, 'debug', $this->getHumanName() . ' : ' . $_message);
@@ -1576,7 +1647,7 @@ class homewizardbe extends eqLogic {
 
     private function clearFailure() {
         if ((int) $this->getCache('failures', 0) > 0) {
-            if ((int) $this->getCache('failures', 0) >= 3) {
+            if ((int) $this->getCache('failures', 0) >= self::OFFLINE_AFTER) {
                 log::add(__CLASS__, 'info', $this->getHumanName() . ' : ' . __('de nouveau joignable.', __FILE__));
             }
             $this->setCache('failures', 0);
